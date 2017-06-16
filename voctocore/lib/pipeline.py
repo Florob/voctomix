@@ -65,12 +65,17 @@ class Pipeline(object):
 
         # check if there is an audio source preconfigured
         try:
-            audiosource = names.index(Config.get('mix', 'audiosource'))
+            audiosource = Config.get('mix', 'audiosource')
+            volumes = [0.0] * len(names)
+            for source in audiosource.split(','):
+                src, *volume = source.split(':', 1)
+                volume = float(volume[0]) if volume else 1.0
+                volumes[names.index(src)] = volume
         except NoOptionError:
-            audiosource = 0
+            volumes = []
 
         self.log.info('Creating Audiomixer')
-        self.amix = AudioMix(audiosource)
+        self.amix = AudioMix(volumes)
 
         port = 16000
         self.log.info('Creating Mixer-Background VSource at tcp-port %u', port)
